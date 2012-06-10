@@ -33,12 +33,12 @@ class Api(object):
             if hasattr(e, 'reason'):
                 # URLError exceptions such as network or connection errors
                 #print 'We failed to reach a server.'
-                #print 'Reason: ', e.reason
+                print 'Reason: ', e.reason
                 raise
             elif hasattr(e, 'code'):
                 # HTTPError exceptions such as 404 page not found
                 #print 'The server couldn\'t fulfill the request.'
-                #print 'Error code: ', e.code
+                print 'Error code: ', e.code
                 raise
         else:
             return response
@@ -58,11 +58,14 @@ class Api(object):
         if category is None:
             response = self.get("Categories." + file_format)
         else:
-            if region is None:
-                response = self.get("Categories/" + category + "." + file_format)
+            path = "Categories/" + category + "." + file_format
+            if with_counts is False:
+                response = self.get(path)
             else:
-                response = self.get("Categories/" + category + "." + file_format,
-                                    {"region": region, "with_counts": with_counts})
+                if region is None:
+                    response = self.get(path, {"with_counts": with_counts})
+                else:
+                    response = self.get(path, {"region": region, "with_counts": with_counts})
 
         return response.read()
 
@@ -76,8 +79,12 @@ class Api(object):
             return dct
 
         path = "Categories/lastupdated.json"
-        response = self.get(path)
-        last_updated = json.load(response, object_hook=as_datetime)
+        try:
+            response = self.get(path)
+            last_updated = json.load(response, object_hook=as_datetime)
+        except:
+            print "Exception getting last updated - using epoch"
+            last_updated = datetime.datetime(1970,1,1)
         return last_updated
 
     def latest(self, page = None, region = None, rows = None, file_format =
