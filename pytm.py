@@ -23,8 +23,8 @@ class Api(object):
         if query is not None:
             self.query = "?" + urlencode(query)
         url = self.base_url + path + self.query
+        r = urllib2.Request(url)
         try:
-            r = urllib2.Request(url)
             response = urllib2.urlopen(r)
 
             # DEBUG: uncomment to print the full url requested
@@ -35,12 +35,11 @@ class Api(object):
                 # URLError exceptions such as network or connection errors
                 #print 'We failed to reach a server.'
                 print 'Reason: ', e.reason
-                raise
             elif hasattr(e, 'code'):
                 # HTTPError exceptions such as 404 page not found
                 #print 'The server couldn\'t fulfill the request.'
                 print 'Error code: ', e.code
-                raise
+            raise
         else:
             return response
 
